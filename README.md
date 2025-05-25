@@ -1,4 +1,3 @@
-cat > README.md << 'EOF'
 # 🏛️ Mediterranean Gateway - Cultural Tourism Platform
 
 A multilingual cultural tourism platform focusing on Mediterranean heritage sites and cultural experiences.
