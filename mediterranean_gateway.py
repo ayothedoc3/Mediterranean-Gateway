@@ -1,6 +1,8 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+import plotly.express as px
+import plotly.graph_objects as go
 from datetime import datetime, timedelta
 import random
 
@@ -52,13 +54,6 @@ st.markdown("""
     .rtl-text {
         direction: rtl;
         text-align: right;
-    }
-    .heritage-site {
-        background: #f8f9fa;
-        padding: 1rem;
-        margin: 0.5rem 0;
-        border-radius: 8px;
-        border-left: 4px solid #FF6B35;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -312,26 +307,32 @@ if page == f"🏛️ {t['home']}":
     df_regions = pd.DataFrame(regions_data)
     st.dataframe(df_regions, use_container_width=True)
     
-    # Heritage sites showcase (instead of map)
+    # Cultural highlights map
     st.subheader(f"📍 {t['heritage_map']}")
     
-    heritage_locations = [
-        {"city": "Athens", "country": "Greece", "sites": 8, "score": 95},
-        {"city": "Cairo", "country": "Egypt", "sites": 15, "score": 98},
-        {"city": "Rome", "country": "Italy", "sites": 22, "score": 99},
-        {"city": "Istanbul", "country": "Turkey", "sites": 12, "score": 87},
-        {"city": "Madrid", "country": "Spain", "sites": 18, "score": 89},
-        {"city": "Casablanca", "country": "Morocco", "sites": 6, "score": 85}
-    ]
+    heritage_sites = pd.DataFrame({
+        'lat': [37.9755, 39.9334, 30.0444, 41.9028, 40.4168, 31.6295],
+        'lon': [23.7348, 32.8597, 31.2357, 12.4964, -3.7038, -7.9811],
+        'city': ['Athens', 'Ankara', 'Cairo', 'Rome', 'Madrid', 'Casablanca'],
+        'heritage_sites': [8, 12, 15, 22, 18, 6],
+        'cultural_score': [95, 87, 98, 99, 89, 85]
+    })
     
-    for location in heritage_locations:
-        col1, col2, col3 = st.columns([2, 1, 1])
-        with col1:
-            st.markdown(f"**🏛️ {location['city']}, {location['country']}**")
-        with col2:
-            st.metric(f"{t['heritage_sites']}", location['sites'])
-        with col3:
-            st.metric("Cultural Score", f"{location['score']}/100")
+    # Create interactive map with site information
+    fig = px.scatter_mapbox(heritage_sites, 
+                           lat="lat", lon="lon", 
+                           size="heritage_sites",
+                           color="cultural_score",
+                           hover_name="city",
+                           hover_data=["heritage_sites", "cultural_score"],
+                           color_continuous_scale="Sunset",
+                           size_max=15,
+                           zoom=4,
+                           height=500)
+    
+    fig.update_layout(mapbox_style="open-street-map")
+    fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
+    st.plotly_chart(fig, use_container_width=True)
     
     # Cultural experience categories
     st.subheader(f"🎭 {t['experience_categories']}")
@@ -339,7 +340,7 @@ if page == f"🏛️ {t['home']}":
     col1, col2, col3 = st.columns(3)
     
     with col1:
-        euro_symbol = "€"
+        euro_symbol = "€"  # Define Euro symbol as variable to avoid syntax issues
         if lang_code == "ar":
             st.markdown(f"""
             <div class="culture-card rtl-text">
@@ -475,61 +476,17 @@ elif page == f"🗺️ {t['planner']}":
                 with col_c:
                     st.metric(f"🎭 {t['cultural_activities']}", "15", t['included'])
 
-elif page == f"🏺 {t['heritage']}":
-    st.header(f"🏺 {t['heritage']}")
-    st.markdown("Explore authenticated cultural treasures across the Mediterranean" if lang_code == "en" else "استكشف الكنوز الثقافية الموثقة عبر البحر الأبيض المتوسط")
-    
-    # Heritage sites with detailed information
-    heritage_sites = [
-        {
-            "name": "Acropolis of Athens" if lang_code == "en" else "أكروبوليس أثينا",
-            "country": "Greece" if lang_code == "en" else "اليونان",
-            "year": 1987,
-            "description": "Symbol of democracy and Western civilization" if lang_code == "en" else "رمز الديمقراطية والحضارة الغربية",
-            "rating": 4.9
-        },
-        {
-            "name": "Pyramids of Giza" if lang_code == "en" else "أهرامات الجيزة",
-            "country": "Egypt" if lang_code == "en" else "مصر",
-            "year": 1979,
-            "description": "Last surviving Wonder of Ancient World" if lang_code == "en" else "آخر عجائب الدنيا السبع الباقية",
-            "rating": 4.9
-        },
-        {
-            "name": "Hagia Sophia" if lang_code == "en" else "آيا صوفيا",
-            "country": "Turkey" if lang_code == "en" else "تركيا",
-            "year": 1985,
-            "description": "Masterpiece of Byzantine architecture" if lang_code == "en" else "تحفة العمارة البيزنطية",
-            "rating": 4.8
-        }
-    ]
-    
-    for site in heritage_sites:
-        with st.container():
-            st.markdown(f"""
-            <div class="heritage-site">
-                <h4>🏛️ {site['name']}</h4>
-                <p><strong>📍 {'Country' if lang_code == 'en' else 'البلد'}:</strong> {site['country']}</p>
-                <p><strong>🏆 {'UNESCO Year' if lang_code == 'en' else 'سنة اليونسكو'}:</strong> {site['year']}</p>
-                <p><strong>📚 {'Description' if lang_code == 'en' else 'الوصف'}:</strong> {site['description']}</p>
-                <p><strong>⭐ {'Rating' if lang_code == 'en' else 'التقييم'}:</strong> {site['rating']}/5</p>
-            </div>
-            """, unsafe_allow_html=True)
-            
-            if st.button(f"{'Book Tour' if lang_code == 'en' else 'احجز جولة'}", key=f"book_{site['name']}"):
-                st.success(f"✅ {'Tour booked successfully!' if lang_code == 'en' else 'تم حجز الجولة بنجاح!'}")
-
 else:
     st.header("🚧 Page Under Development")
-    st.info("This page is being developed. Please check back soon!" if lang_code == "en" else "هذه الصفحة قيد التطوير. يرجى المراجعة قريباً!")
-    st.markdown(f"### {'Available Pages' if lang_code == 'en' else 'الصفحات المتاحة'}:")
+    st.info("This page is being developed. Please check back soon!")
+    st.markdown("### Available Pages:")
     st.markdown(f"- ✅ {t['home']}")
     st.markdown(f"- ✅ {t['planner']}")
-    st.markdown(f"- ✅ {t['heritage']}")
-    st.markdown(f"- 🚧 {t['experiences']} ({'Coming Soon' if lang_code == 'en' else 'قريباً'})")
-    st.markdown(f"- 🚧 {t['stays']} ({'Coming Soon' if lang_code == 'en' else 'قريباً'})")
-    st.markdown(f"- 🚧 {t['insights']} ({'Coming Soon' if lang_code == 'en' else 'قريباً'})")
-    st.markdown(f"- 🚧 {t['booking']} ({'Coming Soon' if lang_code == 'en' else 'قريباً'})")
+    st.markdown(f"- 🚧 {t['heritage']} (Coming Soon)")
+    st.markdown(f"- 🚧 {t['experiences']} (Coming Soon)")
+    st.markdown(f"- 🚧 {t['stays']} (Coming Soon)")
+    st.markdown(f"- 🚧 {t['insights']} (Coming Soon)")
+    st.markdown(f"- 🚧 {t['booking']} (Coming Soon)")
 
 # Footer with proper language support
 st.markdown("---")

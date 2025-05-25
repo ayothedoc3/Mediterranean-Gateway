@@ -1,0 +1,16 @@
+streamlit>=1.28.0
+pandas>=2.0.0
+numpy>=1.24.0
+plotly>=5.15.0
+random2>=1.0.1
+
+# Optional: For enhanced functionality
+requests>=2.31.0
+pillow>=10.0.0
+
+# For deployment UI
+streamlit-option-menu>=0.3.6
+
+# For better Arabic/RTL text support (optional)
+arabic-reshaper>=3.0.0
+python-bidi>=0.4.2
